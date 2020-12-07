@@ -34,12 +34,20 @@ scrape_configs:
     static_configs:
       - targets: ['pushgateway:9091']
 
+  # Scrapes the mirth_channel_exporter go web app deployed in the mirth docker-compose.yml
+  # Using the docker host IP address here 172.17.0.1 but perhaps should be using
+  # a shared network
+  - job_name: 'mirth'
+    scrape_interval: 5s
+    honor_labels: true
+    static_configs:
+      - targets: ['mirth_channel_exporter:9141']
 
 alerting:
   alertmanagers:
   - scheme: http
     static_configs:
-    - targets: 
+    - targets:
       - 'alertmanager:9093'
 
 #  - job_name: 'nginx'

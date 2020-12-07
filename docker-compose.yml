@@ -1,14 +1,30 @@
-version: '2.1'
+version: "3.5"
 
 networks:
   monitor-net:
     driver: bridge
+    name: monitor_net
 
 volumes:
     prometheus_data: {}
     grafana_data: {}
 
 services:
+  mirth_channel_exporter:
+    image: airslie/mirth_channel_exporter:0.1
+    container_name: mirth_channel_exporter
+    restart: always
+    # Note that the MIRTH_ENDPOINT points to the host called mc (mirth connect) and this works
+    # because we share the monitor_net network with the mirth docker-compose stack.
+    # TODO: use docker secrets or .env here to store credentials
+    environment:
+      - MIRTH_USERNAME
+      - MIRTH_PASSWORD
+      - MIRTH_ENDPOINT=https://mc:8443
+    ports:
+      - 9141:9141
+    networks:
+      - monitor-net
 
   prometheus:
     image: prom/prometheus:v2.23.0
@@ -116,8 +132,10 @@ services:
   caddy:
     image: stefanprodan/caddy
     container_name: caddy
+    # Note grafana is on port 3000 but as use use 3000 for Rails dev,
+    # map this to the host port 3002
     ports:
-      - "3000:3000"
+      - "3002:3000"
       - "9090:9090"
       - "9093:9093"
       - "9091:9091"
